@@ -1,0 +1,80 @@
+name: Reusable Obsidian E2E
+on:
+  workflow_call:
+    inputs:
+      harness_ref:
+        description: Immutable DevLab commit SHA
+        required: true
+        type: string
+      plugin_path:
+        type: string
+        default: .
+      vault_path:
+        type: string
+        default: test-vault
+      specs_path:
+        type: string
+        default: e2e
+      extras:
+        description: JSON array of plugin runtime subdirectories
+        type: string
+        default: '[]'
+      obsidian_version:
+        type: string
+        default: latest
+permissions:
+  contents: read
+jobs:
+  e2e:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Linux display dependencies
+        run: sudo apt-get update && sudo apt-get install -y xvfb xauth libgtk-3-0 libnss3 libasound2 libgbm1
+      - name: Install caller dependencies
+        run: |
+          if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
+      - name: Prepare plugin and run caller checks
+        run: npm run devlab:prepare
+      - name: Fetch pinned public DevLab harness
+        uses: actions/checkout@v4
+        with:
+          repository: helliprojects/obsidian-devlab
+          ref: ${{ inputs.harness_ref }}
+          path: .devlab-harness
+          persist-credentials: false
+      - name: Install harness dependencies
+        working-directory: .devlab-harness
+        run: |
+          if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
+      - name: Prepare disposable vault
+        env:
+          DEVLAB_ROOT: ${{ github.workspace }}
+          DEVLAB_PLUGIN_PATH: ${{ inputs.plugin_path }}
+          DEVLAB_VAULT_PATH: ${{ inputs.vault_path }}
+          DEVLAB_SPECS_PATH: ${{ inputs.specs_path }}
+          DEVLAB_EXTRAS: ${{ inputs.extras }}
+          DEVLAB_OBSIDIAN_VERSION: ${{ inputs.obsidian_version }}
+        run: node .devlab-harness/scripts/prepare.mjs
+      - name: Run real Obsidian under Xvfb
+        working-directory: .devlab-harness
+        env:
+          DEVLAB_ROOT: ${{ github.workspace }}
+        run: xvfb-run -a -s "-screen 0 1440x1000x24" npm run test:e2e
+      - name: Upload diagnostics (even if tests fail)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: devlab-e2e-${{ github.run_attempt }}
+          path: .devlab-reports/
+          if-no-files-found: warn
+          retention-days: 7

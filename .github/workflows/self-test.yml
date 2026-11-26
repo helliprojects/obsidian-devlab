@@ -1,0 +1,16 @@
+name: DevLab self-test
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    uses: ./.github/workflows/e2e.yml
+    with:
+      harness_ref: ${{ github.sha }}
+      plugin_path: fixtures/smoke-plugin
+      vault_path: fixtures/vault
+      specs_path: fixtures/specs

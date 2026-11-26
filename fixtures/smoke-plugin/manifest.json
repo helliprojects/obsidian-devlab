@@ -1,0 +1,9 @@
+{
+  "id": "devlab-smoke",
+  "name": "DevLab Smoke",
+  "version": "0.1.0",
+  "minAppVersion": "1.8.0",
+  "description": "Test fixture for DevLab",
+  "author": "helliprojects",
+  "isDesktopOnly": true
+}
