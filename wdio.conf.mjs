@@ -7,7 +7,7 @@ mkdirSync(report,{recursive:true});
 let sequence=0;
 export const config={
  runner:'local',framework:'mocha',maxInstances:1,
- specs:[path.join(settings.specs,'**','*.e2e.mjs')],
+ specs:[path.join(settings.specs,'**','*.e2e.mjs').replaceAll('\\','/')],
  capabilities:[{browserName:'obsidian',browserVersion:settings.version,'wdio:obsidianOptions':{installerVersion:'latest',plugins:[settings.plugin],vault:settings.vault,copy:false}}],
  services:['obsidian'],
  reporters:['spec',['junit',{outputDir:report,outputFileFormat:({cid})=>'junit-'+cid+'.xml'}]],
@@ -22,7 +22,7 @@ export const config={
     window.addEventListener('error',e=>window.__devlabErrors.push(String(e.message)));
     window.addEventListener('unhandledrejection',e=>window.__devlabErrors.push(String(e.reason)));
   });
-  writeFileSync(path.join(report,'runtime.json'),JSON.stringify({appVersion:await browser.getObsidianVersion(),installerVersion:await browser.getObsidianInstallerVersion(),plugin:settings.id},null,2));
+  writeFileSync(path.join(report,'runtime.json'),JSON.stringify({appVersion:await browser.getObsidianVersion(),installerVersion:await browser.getObsidianInstallerVersion(),plugin:settings.id,platform:process.platform,arch:process.arch},null,2));
  },
  afterTest:async(test,context,result)=>{
   const name=String(++sequence).padStart(2,'0')+'-'+test.title.replace(/[^a-zA-Z0-9_-]+/g,'-').slice(0,90);

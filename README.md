@@ -28,3 +28,6 @@ Use the same real SHA in both places. See the self-test workflow for a reference
 - First milestone: reference fixture and real plugin UI tests on Linux.
 - Next: lockfiles, pinned Obsidian release matrix, reproducible visual baselines, performance measurements, Windows/macOS, structured HTML summary and optional CLI/MCP integration.
 - No visual diff, persistent live session, automatic repair agent, or release gate is claimed implemented yet.
+
+## Windows desktop E2E (preview)
+Set `runner: windows-2022` in the reusable workflow inputs to run the same specs on the GitHub-hosted Windows desktop; Xvfb is Linux-only. Separate OS-specific artifacts prevent collisions in a matrix. See self-test results for verification; Windows GUI availability, driver compatibility, and focus behavior are subject to actual CI results.

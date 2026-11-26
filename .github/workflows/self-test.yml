@@ -8,8 +8,13 @@ permissions:
   contents: read
 jobs:
   smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-22.04, windows-2022]
     uses: ./.github/workflows/e2e.yml
     with:
+      runner: ${{ matrix.runner }}
       harness_ref: ${{ github.sha }}
       plugin_path: fixtures/smoke-plugin
       vault_path: fixtures/vault
