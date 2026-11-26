@@ -76,5 +76,6 @@ jobs:
         with:
           name: devlab-e2e-${{ github.run_attempt }}
           path: .devlab-reports/
-          if-no-files-found: warn
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 7
